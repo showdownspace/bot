@@ -28,7 +28,8 @@ client.on('interactionCreate', async interaction => {
     if (m = string.match(/^set\s+email\s+(\S+)$/)) {
       await db.collection('profiles').updateOne(
         { _id: `discord${interaction.user.id}` },
-        { $set: { discordUserId: interaction.user.id, discordTag: interaction.user.tag, proposedEmail: m[1] } }
+        { $set: { discordUserId: interaction.user.id, discordTag: interaction.user.tag, proposedEmail: m[1] } },
+        { upsert: true }
       )
 		  await interaction.reply('saved your email, thanks!');
     } else {
