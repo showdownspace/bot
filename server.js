@@ -1,5 +1,6 @@
 const { Client, Intents } = require('discord.js');
 const path = require("path");
+const util = require("util");
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 // MongoDB
@@ -38,9 +39,24 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 client.on('messageCreate', async message => {
-  if (message.mentions.has(client.user) && !message.author.bot) {
+  if (message.mentions.has(client.user) && !message.author.bot && message.guild.id === '964056204148097084') {
     console.log(`[${new Date().toJSON()}] ${message.author.tag} Message=>`, message)
     let isAdmin = message.author.id === '104986860236877824'
+    let m = message.content.match(/^\s*<@965531868625776671>\s*```js\s*([^]*)\s*```\s*$/)
+    const guild = message.guild
+    if (isAdmin && m) {
+      const fn = new Function('ctx', 'code', 'with(ctx){return eval(code)}');
+      let replyText = ''
+      try {
+        const result = await fn({ message, client, guild, db }, m[1]);
+        replyText = '```\n' + util.inspect(result) + '\n```'
+      } catch (error) {
+        replyText = '```\n' + String(error) + '\n```'
+        console.error(error)
+      }
+      message.reply(replyText)
+      return;
+    }
     message.reply(`whee ${isAdmin}`)
   }
 });
