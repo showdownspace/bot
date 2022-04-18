@@ -13,6 +13,17 @@ client.once('ready', () => {
 });
 client.login(process.env.DISCORD_TOKEN);
 
+client.on('interactionCreate', async interaction => {
+	if (!interaction.isCommand()) return;
+
+	const { commandName } = interaction;
+
+  console.log(interaction)
+	if (commandName === 'showdown') {
+		await interaction.reply('Pong!');
+	}
+});
+
 // Require the fastify framework and instantiate it
 const fastify = require("fastify")({
   // set this to true for detailed logging:
