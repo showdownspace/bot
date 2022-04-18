@@ -1,4 +1,13 @@
+const { Client, Intents } = require('discord.js');
 const path = require("path");
+
+const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+client.once('ready', () => {
+	console.log('Ready!');
+});
+
+// Login to Discord with your client's token
+client.login(process.env.DISCORD_TOKEN);
 
 // Require the fastify framework and instantiate it
 const fastify = require("fastify")({

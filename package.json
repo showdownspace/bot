@@ -7,14 +7,15 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "fastify": "^3.27.4",
+    "fastify": "^3.28.0",
     "fastify-formbody": "^5.2.0",
     "fastify-static": "^4.6.1",
     "handlebars": "^4.7.7",
-    "point-of-view": "^5.2.0"
+    "point-of-view": "^5.2.0",
+    "discord.js": "^13.6.0"
   },
   "engines": {
-    "node": "12.x"
+    "node": "16.x"
   },
   "repository": {
     "url": "https://glitch.com/edit/#!/glitch-mvp-node"
