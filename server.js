@@ -9,7 +9,10 @@ mongo.connect();
 const db = mongo.db()
 
 // Discord
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.DIRECT_MESSAGES] });
+const client = new Client({
+  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.DIRECT_MESSAGES],
+  partials: ["CHANNEL"]
+});
 client.once('ready', () => {
 	console.log('Ready!');
 });
@@ -23,7 +26,7 @@ client.on('interactionCreate', async interaction => {
   console.log(interaction)
 	if (commandName === 'showdown') {
     const string = String(interaction.options.getString('command')).trim();
-    console.log(`[${new Date().toJSON()}] ${interaction.user.tag} DM=> ${string}`)
+    console.log(`[${new Date().toJSON()}] ${interaction.user.tag} Slash=> ${string}`)
     
     let m
     if (m = string.match(/^set\s+email\s+(\S+)$/)) {
@@ -39,6 +42,14 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 client.on('messageCreate', async message => {
+  if (message.partial) {
+    console.log('Received a partial message!')
+    message = await message.fetch()
+  }
+  if (!message.guild && !message.author.bot) {
+    message.reply(`haiyaa`)
+    return
+  }
   if (message.mentions.has(client.user) && !message.author.bot && message.guild.id === '964056204148097084') {
     console.log(`[${new Date().toJSON()}] ${message.author.tag} Message=>`, message)
     let isAdmin = message.author.id === '104986860236877824'
@@ -57,7 +68,7 @@ client.on('messageCreate', async message => {
       message.reply(replyText)
       return;
     }
-    message.reply(`whee ${isAdmin}`)
+    message.reply(`heyo`)
   }
 });
 
