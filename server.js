@@ -46,13 +46,13 @@ client.on('messageCreate', async message => {
     console.log('Received a partial message!')
     message = await message.fetch()
   }
+  let isAdmin = message.author.id === '104986860236877824'
   if (!message.guild && !message.author.bot) {
-    message.reply(`haiyaa`)
+    message.reply(`Use the \`/showdown\` command to send stuff to me`)
     return
   }
   if (message.mentions.has(client.user) && !message.author.bot && message.guild.id === '964056204148097084') {
     console.log(`[${new Date().toJSON()}] ${message.author.tag} Message=>`, message)
-    let isAdmin = message.author.id === '104986860236877824'
     let m = message.content.match(/^\s*<@965531868625776671>\s*```js\s*([^]*)\s*```\s*$/)
     const guild = message.guild
     if (isAdmin && m) {
