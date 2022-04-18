@@ -5,6 +5,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 // MongoDB
 const mongo = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 mongo.connect();
+const db = mongo.db()
 
 // Discord
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
@@ -20,7 +21,19 @@ client.on('interactionCreate', async interaction => {
 
   console.log(interaction)
 	if (commandName === 'showdown') {
-		await interaction.reply('Pong!');
+    const string = String(interaction.options.getString('command')).trim();
+    console.log(`[${new Date().toJSON()}] ${interaction.user.tag} => ${string}`)
+    
+    let m
+    if (m = string.match(/^set\s+email\s+(\S+)$/)) {
+      await db.collection('profiles').updateOne(
+        { _id: `discord${interaction.user.id}` },
+        { $set: { discordUserId: interaction.user.id, discordTag: interaction.user.tag, proposedEmail: m[1] } }
+      )
+		  await interaction.reply('saved your email, thanks!');
+    } else {
+		  await interaction.reply('unrecognized command!');
+    }
 	}
 });
 
