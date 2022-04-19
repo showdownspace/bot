@@ -5,6 +5,7 @@ const { MongoClient, ServerApiVersion } = require("mongodb");
 const fs = require("fs");
 const crypto = require("crypto");
 require('source-map-support').install();
+const encrypted = require('@dtinth/encrypted')()
 
 let latestDeployment;
 fs.mkdirSync(".data/blobs", { recursive: true });
