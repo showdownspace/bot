@@ -5,7 +5,19 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const fs = require('fs')
 const crypto = require('crypto')
 
+let latestDeployment
 fs.mkdirSync('.data/blobs', { recursive: true })
+if (fs.existsSync('.data/latest_deployment')) {
+  latestDeployment = fs.readFileSync('.data/latest_deployment', 'utf8')
+  console.log('Latest deployment found.')
+} else {
+  console.log('No deployment found.')
+}
+
+async function loadLatestDeployment() {
+  const file = fs.realpathSync('.data/deployments/' + latestDeployment + '/index.js')
+  return require(file)
+}
 
 // MongoDB
 const mongo = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -21,8 +33,10 @@ client.once('ready', () => {
 	console.log('Ready!');
 });
 client.login(process.env.DISCORD_TOKEN);
-
+const context = { client, db }
 client.on('interactionCreate', async interaction => {
+  const logic = await loadLatestDeployment()
+  logic.handleInteraction(interaction)
 	if (!interaction.isCommand()) return;
 
 	const { commandName } = interaction;
@@ -46,6 +60,7 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 client.on('messageCreate', async message => {
+  loadLatestDeployment().then(m => console.log(m))
   if (message.partial) {
     console.log('Received a partial message!')
     message = await message.fetch()
@@ -79,7 +94,7 @@ client.on('messageCreate', async message => {
 // Require the fastify framework and instantiate it
 const fastify = require("fastify")({
   // set this to true for detailed logging:
-  logger: false
+  logger: true
 });
 
 // Setup our static files
@@ -121,11 +136,15 @@ fastify.post('/deploy', async (request, reply) => {
   fs.mkdirSync(deploymentPath, { recursive: true })
   for (const { filename, data, hash } of request.body.files) {
     const blobPath = `.data/blobs/${hash}`
-    if (data == null && !fs.existsSync(blobPath)) {
-      raise(400, 'Missing data for hash ' + hash)
+    try {
+      fs.linkSync(blobPath, `${deploymentPath}/${filename}`)
+    } catch (error) {
+      if (error.code !== 'EEXIST') {
+        throw error
+      }
     }
-    fs.writeFileSync(blobPath, data, 'utf8')
   }
+  fs.writeFileSync('.data/latest_deployment', deploymentHash)
   return 'meow'
 })
 
