@@ -4,6 +4,7 @@ const util = require("util");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const fs = require("fs");
 const crypto = require("crypto");
+require('source-map-support').install();
 
 let latestDeployment;
 fs.mkdirSync(".data/blobs", { recursive: true });
