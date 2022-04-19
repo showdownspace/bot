@@ -32,11 +32,14 @@ const client = new Client({
 client.once('ready', () => {
 	console.log('Ready!');
 });
-client.login(process.env.DISCORD_TOKEN);
-const context = { client, db }
+const discordToken = process.env.DISCORD_TOKEN;
+client.login(discordToken);
+const context = { client, db, discordToken }
+
 client.on('interactionCreate', async interaction => {
   const logic = await loadLatestDeployment()
-  logic.handleInteraction(interaction)
+  return logic.handleInteraction(context, interaction)
+
 	if (!interaction.isCommand()) return;
 
 	const { commandName } = interaction;
@@ -60,41 +63,15 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 client.on('messageCreate', async message => {
-  loadLatestDeployment().then(m => console.log(m))
-  if (message.partial) {
-    console.log('Received a partial message!')
-    message = await message.fetch()
-  }
-  let isAdmin = message.author.id === '104986860236877824'
-  if (!message.guild && !message.author.bot) {
-    message.reply(`Use the \`/showdown\` command to send stuff to me`)
-    return
-  }
-  if (message.mentions.has(client.user) && !message.author.bot && message.guild.id === '964056204148097084') {
-    console.log(`[${new Date().toJSON()}] ${message.author.tag} Message=>`, message)
-    let m = message.content.match(/^\s*<@965531868625776671>\s*```js\s*([^]*)\s*```\s*$/)
-    const guild = message.guild
-    if (isAdmin && m) {
-      const fn = new Function('ctx', 'code', 'with(ctx){return eval(code)}');
-      let replyText = ''
-      try {
-        const result = await fn({ message, client, guild, db }, m[1]);
-        replyText = '```\n' + util.inspect(result) + '\n```'
-      } catch (error) {
-        replyText = '```\n' + String(error) + '\n```'
-        console.error(error)
-      }
-      message.reply(replyText)
-      return;
-    }
-    message.reply(`heyo`)
-  }
+  const logic = await loadLatestDeployment()
+  return logic.handleMessage(context, message)
 });
 
 // Require the fastify framework and instantiate it
 const fastify = require("fastify")({
   // set this to true for detailed logging:
-  logger: true
+  logger: true,
+  bodyLimit: 10 * 1048576
 });
 
 // Setup our static files
@@ -128,7 +105,9 @@ fastify.post('/deploy', async (request, reply) => {
     if (data == null && !fs.existsSync(blobPath)) {
       raise(400, 'Missing data for hash ' + hash)
     }
-    fs.writeFileSync(blobPath, data, 'utf8')
+    if (data != null) {
+      fs.writeFileSync(blobPath, data, 'utf8')
+    }
   }
   const hashes = request.body.files.map(f => f.hash).sort()
   const deploymentHash = crypto.createHash('sha256').update(hashes.join(',')).digest('hex')
@@ -145,6 +124,7 @@ fastify.post('/deploy', async (request, reply) => {
     }
   }
   fs.writeFileSync('.data/latest_deployment', deploymentHash)
+  latestDeployment = deploymentHash
   return 'meow'
 })
 
