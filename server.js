@@ -3,6 +3,9 @@ const path = require("path");
 const util = require("util");
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const fs = require('fs')
+const crypto = require('crypto')
+
+fs.mkdirSync('.data/blobs', { recursive: true })
 
 // MongoDB
 const mongo = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -95,8 +98,34 @@ fastify.register(require("point-of-view"), {
   }
 });
 
+function raise(code, message) {
+  const err = new Error(message)
+  err.statusCode = code
+  throw err
+}
+
 fastify.post('/deploy', async (request, reply) => {
-  console.log(request.body.files.length)
+  if (request.body.token !== process.env.CODE_DEPLOY_TOKEN) {
+    raise(401, 'Invalid deploy key')
+  }
+  for (const { filename, data, hash } of request.body.files) {
+    const blobPath = `.data/blobs/${hash}`
+    if (data == null && !fs.existsSync(blobPath)) {
+      raise(400, 'Missing data for hash ' + hash)
+    }
+    fs.writeFileSync(blobPath, data, 'utf8')
+  }
+  const hashes = request.body.files.map(f => f.hash).sort()
+  const deploymentHash = crypto.createHash('sha256').update(hashes.join(',')).digest('hex')
+  const deploymentPath = `.data/deployments/${deploymentHash}`
+  fs.mkdirSync(deploymentPath, { recursive: true })
+  for (const { filename, data, hash } of request.body.files) {
+    const blobPath = `.data/blobs/${hash}`
+    if (data == null && !fs.existsSync(blobPath)) {
+      raise(400, 'Missing data for hash ' + hash)
+    }
+    fs.writeFileSync(blobPath, data, 'utf8')
+  }
   return 'meow'
 })
 
