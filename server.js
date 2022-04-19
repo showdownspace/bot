@@ -22,6 +22,13 @@ async function loadLatestDeployment() {
   return require(file);
 }
 
+// Require the fastify framework and instantiate it
+const fastify = require("fastify")({
+  // set this to true for detailed logging:
+  logger: true,
+  bodyLimit: 10 * 1048576,
+});
+
 // MongoDB
 const mongo = new MongoClient(process.env.MONGODB_URI, {
   useNewUrlParser: true,
@@ -45,7 +52,7 @@ client.once("ready", () => {
 });
 const discordToken = process.env.DISCORD_TOKEN;
 client.login(discordToken);
-const context = { client, db, discordToken };
+const context = { client, db, fastify, discordToken };
 
 client.on("interactionCreate", async (interaction) => {
   const logic = await loadLatestDeployment();
@@ -54,13 +61,6 @@ client.on("interactionCreate", async (interaction) => {
 client.on("messageCreate", async (message) => {
   const logic = await loadLatestDeployment();
   return logic.handleMessage(context, message);
-});
-
-// Require the fastify framework and instantiate it
-const fastify = require("fastify")({
-  // set this to true for detailed logging:
-  logger: true,
-  bodyLimit: 10 * 1048576,
 });
 
 // Setup our static files
@@ -119,6 +119,11 @@ fastify.post("/deploy", async (request, reply) => {
   latestDeployment = deploymentHash;
   return "meow";
 });
+
+fastify.all('/showdown', async (request, reply) => {
+  const logic = await loadLatestDeployment();
+  return logic.handleHttpRequest(context, request, reply);
+})
 
 // Our main GET home page route, pulls from src/pages/index.hbs
 fastify.get("/", function (request, reply) {
