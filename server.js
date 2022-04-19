@@ -2,6 +2,7 @@ const { Client, Intents } = require('discord.js');
 const path = require("path");
 const util = require("util");
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const fs = require('fs')
 
 // MongoDB
 const mongo = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -93,6 +94,11 @@ fastify.register(require("point-of-view"), {
     handlebars: require("handlebars")
   }
 });
+
+fastify.post('/deploy', async (request, reply) => {
+  console.log(request.body.files.length)
+  return 'meow'
+})
 
 // Our main GET home page route, pulls from src/pages/index.hbs
 fastify.get("/", function(request, reply) {
