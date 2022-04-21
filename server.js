@@ -4,6 +4,8 @@ const util = require("util");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const fs = require("fs");
 const crypto = require("crypto");
+const { PassThrough } = require('stream')
+const ndjson = require('ndjson')
 require('source-map-support').install();
 
 const loggly = require('node-loggly-bulk').createClient({
@@ -14,14 +16,15 @@ const loggly = require('node-loggly-bulk').createClient({
 });
 
 // Require the fastify framework and instantiate it
+const logStream = new PassThrough()
+logStream.pipe(process.stdout)
+logStream.pipe(ndjson.parse({ strict: false })).on('data', m => {
+  loggly.log(m)
+})
 const fastify = require("fastify")({
   // set this to true for detailed logging:
   logger: {
-    mixin: (obj) => {
-      //loggly.log(obj)
-      console.log('>>', obj)
-      return {}
-    }
+    stream: logStream
   },
   bodyLimit: 10 * 1048576,
 });
