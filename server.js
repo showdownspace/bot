@@ -6,6 +6,14 @@ const fs = require("fs");
 const crypto = require("crypto");
 require('source-map-support').install();
 
+const loggly = require('node-loggly-bulk').createClient({
+  token: process.env.LOGGLY_TOKEN,
+  subdomain: process.env.LOGGLY_SUBDOMAIN,
+  tags: ["showdownspace-bot"],
+  json: true
+});
+loggly.log('meow')
+
 let latestDeployment;
 fs.mkdirSync(".data/blobs", { recursive: true });
 if (fs.existsSync(".data/latest_deployment")) {
