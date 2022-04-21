@@ -12,15 +12,28 @@ const loggly = require('node-loggly-bulk').createClient({
   tags: ["showdownspace-bot"],
   json: true
 });
-loggly.log('meow')
+
+// Require the fastify framework and instantiate it
+const fastify = require("fastify")({
+  // set this to true for detailed logging:
+  logger: {
+    mixin: (obj) => {
+      //loggly.log(obj)
+      console.log('>>', obj)
+      return {}
+    }
+  },
+  bodyLimit: 10 * 1048576,
+});
+const log = fastify.log;
 
 let latestDeployment;
 fs.mkdirSync(".data/blobs", { recursive: true });
 if (fs.existsSync(".data/latest_deployment")) {
   latestDeployment = fs.readFileSync(".data/latest_deployment", "utf8");
-  console.log("Latest deployment found.");
+  log.info("Latest deployment found.");
 } else {
-  console.log("No deployment found.");
+  log.info("No deployment found.");
 }
 
 async function loadLatestDeployment() {
@@ -29,13 +42,6 @@ async function loadLatestDeployment() {
   );
   return require(file);
 }
-
-// Require the fastify framework and instantiate it
-const fastify = require("fastify")({
-  // set this to true for detailed logging:
-  logger: true,
-  bodyLimit: 10 * 1048576,
-});
 
 // MongoDB
 const mongo = new MongoClient(process.env.MONGODB_URI, {
@@ -60,7 +66,7 @@ client.once("ready", () => {
 });
 const discordToken = process.env.DISCORD_TOKEN;
 client.login(discordToken);
-const context = { client, db, fastify, discordToken };
+const context = { client, db, fastify, discordToken, log };
 
 client.on("interactionCreate", async (interaction) => {
   const logic = await loadLatestDeployment();
