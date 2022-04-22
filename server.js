@@ -4,15 +4,39 @@ const util = require("util");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const fs = require("fs");
 const crypto = require("crypto");
+const { PassThrough } = require('stream')
+const ndjson = require('ndjson')
 require('source-map-support').install();
+
+const loggly = require('node-loggly-bulk').createClient({
+  token: process.env.LOGGLY_TOKEN,
+  subdomain: process.env.LOGGLY_SUBDOMAIN,
+  tags: ["showdownspace-bot"],
+  json: true
+});
+
+// Require the fastify framework and instantiate it
+const logStream = new PassThrough()
+logStream.pipe(process.stdout)
+logStream.pipe(ndjson.parse({ strict: false })).on('data', m => {
+  loggly.log(m)
+})
+const fastify = require("fastify")({
+  // set this to true for detailed logging:
+  logger: {
+    stream: logStream
+  },
+  bodyLimit: 10 * 1048576,
+});
+const log = fastify.log;
 
 let latestDeployment;
 fs.mkdirSync(".data/blobs", { recursive: true });
 if (fs.existsSync(".data/latest_deployment")) {
   latestDeployment = fs.readFileSync(".data/latest_deployment", "utf8");
-  console.log("Latest deployment found.");
+  log.info("Latest deployment found.");
 } else {
-  console.log("No deployment found.");
+  log.info("No deployment found.");
 }
 
 async function loadLatestDeployment() {
@@ -21,13 +45,6 @@ async function loadLatestDeployment() {
   );
   return require(file);
 }
-
-// Require the fastify framework and instantiate it
-const fastify = require("fastify")({
-  // set this to true for detailed logging:
-  logger: true,
-  bodyLimit: 10 * 1048576,
-});
 
 // MongoDB
 const mongo = new MongoClient(process.env.MONGODB_URI, {
@@ -52,7 +69,7 @@ client.once("ready", () => {
 });
 const discordToken = process.env.DISCORD_TOKEN;
 client.login(discordToken);
-const context = { client, db, fastify, discordToken };
+const context = { client, db, fastify, discordToken, log };
 
 client.on("interactionCreate", async (interaction) => {
   const logic = await loadLatestDeployment();
