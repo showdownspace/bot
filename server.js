@@ -4,27 +4,34 @@ const util = require("util");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const fs = require("fs");
 const crypto = require("crypto");
-const { PassThrough } = require('stream')
-const ndjson = require('ndjson')
-require('source-map-support').install();
+const { PassThrough } = require("stream");
+const ndjson = require("ndjson");
+const firebaseAdmin = require("firebase-admin");
 
-const loggly = require('node-loggly-bulk').createClient({
+firebaseAdmin.initializeApp({
+  credential: firebaseAdmin.credential.cert(require('./.data/credentials/service-account.json')),
+  databaseURL: "https://showdownspace-default-rtdb.asia-southeast1.firebasedatabase.app"
+});
+
+require("source-map-support").install();
+
+const loggly = require("node-loggly-bulk").createClient({
   token: process.env.LOGGLY_TOKEN,
   subdomain: process.env.LOGGLY_SUBDOMAIN,
   tags: ["showdownspace-bot"],
-  json: true
+  json: true,
 });
 
 // Require the fastify framework and instantiate it
-const logStream = new PassThrough()
-logStream.pipe(process.stdout)
-logStream.pipe(ndjson.parse({ strict: false })).on('data', m => {
-  loggly.log(m)
-})
+const logStream = new PassThrough();
+logStream.pipe(process.stdout);
+logStream.pipe(ndjson.parse({ strict: false })).on("data", (m) => {
+  loggly.log(m);
+});
 const fastify = require("fastify")({
   // set this to true for detailed logging:
   logger: {
-    stream: logStream
+    stream: logStream,
   },
   bodyLimit: 10 * 1048576,
 });
@@ -69,7 +76,7 @@ client.once("ready", () => {
 });
 const discordToken = process.env.DISCORD_TOKEN;
 client.login(discordToken);
-const context = { client, db, fastify, discordToken, log };
+const context = { client, db, fastify, discordToken, log, firebaseAdmin };
 
 client.on("interactionCreate", async (interaction) => {
   const logic = await loadLatestDeployment();
@@ -137,10 +144,10 @@ fastify.post("/deploy", async (request, reply) => {
   return "meow";
 });
 
-fastify.all('/showdown', async (request, reply) => {
+fastify.all("/showdown", async (request, reply) => {
   const logic = await loadLatestDeployment();
   return logic.handleHttpRequest(context, request, reply);
-})
+});
 
 // Our main GET home page route, pulls from src/pages/index.hbs
 fastify.get("/", function (request, reply) {

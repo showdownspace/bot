@@ -20,7 +20,8 @@
     "source-map-support": "^0.5.21",
     "@dtinth/encrypted": "^0.3.0",
     "node-loggly-bulk": "^3.0.1",
-    "ndjson": "^2.0.0"
+    "ndjson": "^2.0.0",
+    "firebase-admin": "^10.1.0"
   },
   "engines": {
     "node": "16.x"
