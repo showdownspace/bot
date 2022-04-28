@@ -15,7 +15,7 @@ firebaseAdmin.initializeApp({
 });
 const googleAuth = new google.auth.GoogleAuth({
   keyFile: './.data/credentials/service-account.json',
-  scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+  scopes: ['https://www.googleapis.com/auth/drive'],
 });
 google.options({ auth: googleAuth });
 
