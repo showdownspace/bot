@@ -6,16 +6,19 @@ const fs = require("fs");
 const crypto = require("crypto");
 const { PassThrough } = require("stream");
 const ndjson = require("ndjson");
-const { google } = require('googleapis');
+const { google } = require("googleapis");
 const firebaseAdmin = require("firebase-admin");
 
 firebaseAdmin.initializeApp({
-  credential: firebaseAdmin.credential.cert(require('./.data/credentials/service-account.json')),
-  databaseURL: "https://showdownspace-default-rtdb.asia-southeast1.firebasedatabase.app"
+  credential: firebaseAdmin.credential.cert(
+    require("./.data/credentials/service-account.json")
+  ),
+  databaseURL:
+    "https://showdownspace-default-rtdb.asia-southeast1.firebasedatabase.app",
 });
 const googleAuth = new google.auth.GoogleAuth({
-  keyFile: './.data/credentials/service-account.json',
-  scopes: ['https://www.googleapis.com/auth/drive'],
+  keyFile: "./.data/credentials/service-account.json",
+  scopes: ["https://www.googleapis.com/auth/drive"],
 });
 google.options({ auth: googleAuth });
 
@@ -82,7 +85,16 @@ client.once("ready", () => {
 });
 const discordToken = process.env.DISCORD_TOKEN;
 client.login(discordToken);
-const context = { client, db, fastify, discordToken, log, firebaseAdmin, google, googleAuth };
+const context = {
+  client,
+  db,
+  fastify,
+  discordToken,
+  log,
+  firebaseAdmin,
+  google,
+  googleAuth,
+};
 
 client.on("interactionCreate", async (interaction) => {
   const logic = await loadLatestDeployment();
