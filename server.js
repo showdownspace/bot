@@ -17,6 +17,7 @@ const googleAuth = new google.auth.GoogleAuth({
   keyFile: './.data/credentials/service-account.json',
   scopes: ['https://www.googleapis.com/auth/cloud-platform'],
 });
+google.options({ auth: googleAuth });
 
 require("source-map-support").install();
 
