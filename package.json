@@ -21,7 +21,8 @@
     "@dtinth/encrypted": "^0.3.0",
     "node-loggly-bulk": "^3.0.1",
     "ndjson": "^2.0.0",
-    "firebase-admin": "^10.1.0"
+    "firebase-admin": "^10.1.0",
+    "googleapis": "^100.0.0"
   },
   "engines": {
     "node": "16.x"
