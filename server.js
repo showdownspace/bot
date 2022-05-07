@@ -86,6 +86,7 @@ client.once("ready", () => {
 const discordToken = process.env.DISCORD_TOKEN;
 client.login(discordToken);
 const context = {
+  processState: {},
   client,
   db,
   fastify,
