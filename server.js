@@ -21,6 +21,9 @@ const googleAuth = new google.auth.GoogleAuth({
   scopes: ["https://www.googleapis.com/auth/drive"],
 });
 google.options({ auth: googleAuth });
+const unscopedGoogleAuth = new google.auth.GoogleAuth({
+  keyFile: "./.data/credentials/service-account.json",
+});
 
 require("source-map-support").install();
 
@@ -97,6 +100,7 @@ const context = {
   firebaseAdmin,
   google,
   googleAuth,
+  unscopedGoogleAuth,
 };
 
 client.on("interactionCreate", async (interaction) => {
