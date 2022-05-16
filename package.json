@@ -4,25 +4,25 @@
   "description": "A simple Node app built on fastify, instantly up and running.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "if [ -n \"$DEBUG_SERVER\" ]; then node debugserver.js; else node server.js; fi"
   },
   "dependencies": {
+    "@discordjs/builders": "^0.13.0",
+    "@discordjs/rest": "^0.4.1",
+    "@dtinth/encrypted": "^0.3.0",
+    "discord-api-types": "^0.31.1",
+    "discord.js": "^13.6.0",
     "fastify": "^3.28.0",
     "fastify-formbody": "^5.2.0",
     "fastify-static": "^4.6.1",
-    "handlebars": "^4.7.7",
-    "point-of-view": "^5.2.0",
-    "discord.js": "^13.6.0",
-    "mongodb": "^4.4.1",
-    "@discordjs/builders": "^0.13.0",
-    "@discordjs/rest": "^0.4.1",
-    "discord-api-types": "^0.31.1",
-    "source-map-support": "^0.5.21",
-    "@dtinth/encrypted": "^0.3.0",
-    "node-loggly-bulk": "^3.0.1",
-    "ndjson": "^2.0.0",
     "firebase-admin": "^10.1.0",
-    "googleapis": "^100.0.0"
+    "googleapis": "^100.0.0",
+    "handlebars": "^4.7.7",
+    "mongodb": "^4.4.1",
+    "ndjson": "^2.0.0",
+    "node-loggly-bulk": "^3.0.1",
+    "point-of-view": "^5.2.0",
+    "source-map-support": "^0.5.21"
   },
   "engines": {
     "node": "16.x"
@@ -35,5 +35,8 @@
     "node",
     "glitch",
     "express"
-  ]
+  ],
+  "devDependencies": {
+    "@types/node": "^17.0.33"
+  }
 }
