@@ -1,0 +1,14 @@
+services:
+  bot:
+    image: node:16
+    environment:
+      NODE_ENV: development
+      PORT: 6058
+    env_file: ./.data/credentials/.env
+    working_dir: /app
+    init: true
+    volumes:
+      - .:/app:ro
+      - ./.data:/app/.data:rw
+    ports:
+      - 127.0.0.1:6058:6058
